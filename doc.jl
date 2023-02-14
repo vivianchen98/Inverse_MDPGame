@@ -157,7 +157,7 @@ Stationary conditions
 
 $\begin{align}
 \nabla_{vec(Y^i)} \mathcal{L} = -b^i - \sum_{j}C^{ij} vec(Y^j)) + \log(vec(Y^i)) - \log\left((D^i)^\top D^i vec(Y^i)\right) \\
-+ (v^i)^\top(D^i-\gamma E^i) = \mathbf{0}_{n^im^i}
++ (D^i-\gamma E^i)^\top v^i = \mathbf{0}_{n^im^i}
 \end{align}$
 """
 
@@ -166,8 +166,7 @@ md"""
 Then we have KKT conditions $\forall i\in[p]$:
 
 $\begin{align}
-	&-b^i - \sum_{j}C^{ij} vec(Y^j)) + \log(vec(Y^i)) - \log\left((D^i)^\top D^i vec(Y^i)\right)\\
-	&\quad \quad \quad \quad + (v^i)^\top(D^i-\gamma E^i) = 0_{n^im^i} \tag{4.3a}\\
+	&-b^i - \sum_{j}C^{ij} vec(Y^j) + \log(vec(Y^i)) - \log\left((D^i)^\top D^i vec(Y^i)\right) + (D^i-\gamma E^i)^\top v^i = 0_{n^im^i} \tag{4.3a}\\
 
 	&D^i vec(Y^i) - q^i - \gamma E^i vec(Y^i) = 0_{n^i} \tag{4.3b}\\
 
@@ -183,7 +182,7 @@ md"""
 Let $y = \begin{bmatrix}vec(Y^1), vec(Y^2), \dots, vec(Y^p)\end{bmatrix}$, we can rewrite the left-hand-side equations:
 
 $\begin{align}
-	&-b^i - \sum_{j}C^{ij} y^j + \log(y^i) - \log\left((D^i)^\top D^i y^i\right)+ (v^i)^\top(D^i-\gamma E^i) = 0_{n^im^i} \tag{4.3a}\\
+	&-b^i - \sum_{j}C^{ij} y^j + \log(y^i) - \log\left((D^i)^\top D^i y^i\right)+ (D^i-\gamma E^i)^\top v^i = 0_{n^im^i} \tag{4.3a}\\
 
 	&D^i y^i - q^i - \gamma E^i y^i = 0_{n^i} \tag{4.3b}\\
 
