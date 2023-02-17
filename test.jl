@@ -39,25 +39,23 @@ data_dir = "data/$(exp_params["env"])/julia/data_$(exp_params["episodes"]).jld2"
 @load data_dir mdp_game_data ŷ
 
 # INVERSE LEARNING
-# b, C, terminate_step, converged, ψ_list = inverse_solve_mdp_game(mdp_game_data, ŷ; max_α=exp_params["max_alpha"], max_iter=exp_params["max_iter"], tol=exp_params["tol"], seed=exp_params["seed"])
-
-@load "results/$exp_dir/seed=$(exp_params["seed"]).jld2" b C
+b, C, terminate_step, converged, ψ_list = inverse_solve_mdp_game(mdp_game_data, ŷ; max_α=exp_params["max_alpha"], max_iter=exp_params["max_iter"], tol=exp_params["tol"], seed=exp_params["seed"])
 
 # VALIDATE
 y, = solve_ih_mdp_game(mdp_game_data, b, C) 
 
 # save results
-# !isdir("results") && mkdir("results")
-# !isdir("results/$exp_dir") && mkdir("results/$exp_dir")
-# @save "results/$exp_dir/seed=$(exp_params["seed"]).jld2" mdp_game_data ŷ exp_params b C terminate_step converged ψ_list
+!isdir("results") && mkdir("results")
+!isdir("results/$exp_dir") && mkdir("results/$exp_dir")
+@save "results/$exp_dir/seed=$(exp_params["seed"]).jld2" mdp_game_data ŷ exp_params b C terminate_step converged ψ_list
 
 # plotting and save ψ vs iter
-# plot(1:terminate_step, ψ_list, label="ψ(y,ŷ), converged=$converged")
-# xlabel!("iter")
-# title!(exp_label)
-# hline!([exp_params["tol"]], label="tol=$(exp_params["tol"])")
-# savefig("results/$exp_dir/seed=$(exp_params["seed"]).png")    
-# println("saved fig to `results/$exp_dir/seed=$(exp_params["seed"]).png`")
+plot(1:terminate_step, ψ_list, label="ψ(y,ŷ), converged=$converged")
+xlabel!("iter")
+title!(exp_label)
+hline!([exp_params["tol"]], label="tol=$(exp_params["tol"])")
+savefig("results/$exp_dir/seed=$(exp_params["seed"]).png")    
+println("saved fig to `results/$exp_dir/seed=$(exp_params["seed"]).png`")
 
 # plotting heatmap of y
 !isdir("results/$exp_dir/heatmap") && mkdir("results/$exp_dir/heatmap")
