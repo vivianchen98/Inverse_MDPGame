@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for se in {6..10}
+for se in {1..5}
 do
-    julia test_game.jl --env PredatorPrey5x5-v0 --data_type interactive --max_alpha 10 --seed $se
+    julia test_game.jl --env ma_gym:PredatorPrey5x5-v1 --type vdn --max_alpha 20 --max_iter 500 --tol 1e-2 --seed $se
 done

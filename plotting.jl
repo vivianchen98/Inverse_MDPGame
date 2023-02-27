@@ -4,6 +4,7 @@ using ColorSchemes, Colors
 cmap = ColorScheme([Colors.RGB(180/255, 0.0, 0.0), Colors.RGB(1, 1, 1), Colors.RGB(0.0, 100/255, 0.0)], "custom", "threetone, red, white, and green")
 cmap_whitegreen = ColorScheme([Colors.RGB(1, 1, 1), Colors.RGB(0.0, 100/255, 0.0)], "custom", "twotone, white, and green")
 include("solvers/mdp_game_solver_inf.jl")
+include("solvers/mdp_solver_inf.jl")
 
 # functions to plot aggregated psi data, invoke by
 # julia> include("plot_psi.jl")
@@ -52,14 +53,37 @@ function plot_heatmap(exp_dir, seed; grid_x=5, grid_y=5)
     save_dir = "$exp_dir/heatmap_seed=$seed"
     !isdir(save_dir) && mkdir(save_dir)
     for i in ProgressBar(1:mdp_game_data.p)
-        heatmap(reshape(y[:,i],(mdp_game_data.n,mdp_game_data.m)), title="y", clim=(0,1), color=cmap_whitegreen.colors)
+        heatmap(reshape(y[:,i],(mdp_game_data.m, mdp_game_data.n)), xticks = 1:mdp_game_data.n, yticks = (1:mdp_game_data.m, ["DOWN", "LEFT", "UP", "RIGHT", "STOP"]), title="y", clim=(0,1), color=cmap_whitegreen.colors)
         savefig("$save_dir/player$(i)_y")
-        heatmap(reshape(ŷ[:,i],(mdp_game_data.n,mdp_game_data.m)), title="ŷ", clim=(0,1), color=cmap_whitegreen.colors)
+        heatmap(reshape(ŷ[:,i],(mdp_game_data.m, mdp_game_data.n)), xticks = 1:mdp_game_data.n, yticks = (1:mdp_game_data.m, ["DOWN", "LEFT", "UP", "RIGHT", "STOP"]), title="ŷ", clim=(0,1), color=cmap_whitegreen.colors)
         savefig("$save_dir/player$(i)_ŷ")
-        heatmap(reshape(v[:,i], (grid_x, grid_y)), title="v", clim=(-10,10), color=cmap.colors, size=(400,400))
+        heatmap(reshape(v[:,i], (grid_x, grid_y)), title="v", clim=(-15,15), color=cmap.colors, size=(400,400))
+        # heatmap(reshape(v[:,i], (grid_x, grid_y)), title="v", color=cmap.colors, size=(400,400))
         savefig("$save_dir/player$(i)_v")
+        heatmap(reshape(b[:,i],(mdp_game_data.m, mdp_game_data.n)), clim=(-5,5), xticks = 1:mdp_game_data.n, yticks = (1:mdp_game_data.m, ["DOWN", "LEFT", "UP", "RIGHT", "STOP"]), title="b", color=cmap.colors)
+        savefig("$save_dir/player$(i)_b")
     end
 
+end
+
+function plot_heatmap_decoupled(exp_dir, seed; grid_x=5, grid_y=5)
+    @load "$exp_dir/seed=$(seed).jld2" mdp_game_data ŷ b
+    y, v = solve_ih_decoupled(mdp_game_data, b)
+
+    # plotting heatmap of y
+    save_dir = "$exp_dir/heatmap_seed=$seed"
+    !isdir(save_dir) && mkdir(save_dir)
+    for i in ProgressBar(1:mdp_game_data.p)
+        heatmap(reshape(y[:,i],(mdp_game_data.m, mdp_game_data.n)), xticks = 1:mdp_game_data.n, yticks = (1:mdp_game_data.m, ["DOWN", "LEFT", "UP", "RIGHT", "STOP"]), title="y", clim=(0,1), color=cmap_whitegreen.colors)
+        savefig("$save_dir/player$(i)_y")
+        heatmap(reshape(ŷ[:,i],(mdp_game_data.m, mdp_game_data.n)), xticks = 1:mdp_game_data.n, yticks = (1:mdp_game_data.m, ["DOWN", "LEFT", "UP", "RIGHT", "STOP"]), title="ŷ", clim=(0,1), color=cmap_whitegreen.colors)
+        savefig("$save_dir/player$(i)_ŷ")
+        heatmap(reshape(v[:,i], (grid_x, grid_y)), title="v", clim=(-15,15), color=cmap.colors, size=(400,400))
+        # heatmap(reshape(v[:,i], (grid_x, grid_y)), title="v", color=cmap.colors, size=(400,400))
+        savefig("$save_dir/player$(i)_v")
+        heatmap(reshape(b[:,i],(mdp_game_data.m, mdp_game_data.n)), clim=(-5,5), xticks = 1:mdp_game_data.n, yticks = (1:mdp_game_data.m, ["DOWN", "LEFT", "UP", "RIGHT", "STOP"]), title="b", color=cmap.colors)
+        savefig("$save_dir/player$(i)_b")
+    end
 end
 
 # function plot_heatmap_v(exp_dir, seed; x=5, y=5)
