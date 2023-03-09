@@ -17,7 +17,7 @@ function solve_ih_mdp_game(mdp_game_data, b, C)
     @variable(model, eqn_b[1:n, 1:p])
 
     # constraint a: condition for dual variable v
-    @NLconstraint(model, [i=1:p, k=1:m*n], -b[k, i] - sum(C[:,:,i,j] * y[:,j] for j in 1:p)[k] - log(y[k,i]) - log((D[i]'*D[i]*y[:,i])[k]) + ((D[i] - γ*E[i])' * v[:,i])[k] == eqn_a[k,i])
+    @NLconstraint(model, [i=1:p, k=1:m*n], -b[k, i] - sum(C[(i-1)*m*n+1,i*m*n] * y[:,j] for j in 1:p)[k] - log(y[k,i]) - log((D[i]'*D[i]*y[:,i])[k]) + ((D[i] - γ*E[i])' * v[:,i])[k] == eqn_a[k,i])
 
     # constraint b: dynamics condition for primal variable y
     @constraint(model, [i=1:p], D[i]*y[:,i]-q[i] - γ * E[i]*y[:,i] .== eqn_b[:,i])
@@ -49,7 +49,7 @@ function solve_ih_mdp_game_optimized(mdp_game_data, b, C)
     @variable(model, eqn_b[1:n, 1:p])
 
     # constraint a: condition for dual variable v
-    @NLconstraint(model, [i=1:p, k=1:m*n], -b[k, i] - sum(C[:,:,i,j] * y[:,j] for j in 1:p)[k] - log(y[k,i]) - log((D[i]'*D[i]*y[:,i])[k]) + ((D[i] - γ*E[i])' * v[:,i])[k] == eqn_a[k,i])
+    @NLconstraint(model, [i=1:p, k=1:m*n], -b[k, i] - sum(C[(i-1)*m*n+1,i*m*n] * y[:,j] for j in 1:p)[k] - log(y[k,i]) - log((D[i]'*D[i]*y[:,i])[k]) + ((D[i] - γ*E[i])' * v[:,i])[k] == eqn_a[k,i])
 
     # constraint b: dynamics condition for primal variable y
     @constraint(model, [i=1:p], D[i]*y[:,i]-q[i] - γ * E[i]*y[:,i] .== eqn_b[:,i])

@@ -31,17 +31,15 @@ function parse_commandline()
 end
 exp_params = parse_commandline()
 
-exp_label = "$(exp_params["env_name"]) | type=$(exp_params["type"]) \n seed=$(exp_params["seed"]) | max_α=$(exp_params["max_alpha"]) | tol=$(exp_params["tol"])"
 
 # GROUND-TRUTH
-data_dir = "julia_data/$(exp_params["env_name"])/$(exp_params["type"])_all.jld2"
-@load data_dir mdp_game_data ŷ
+@load "julia_data/$(exp_params["env_name"])/$(exp_params["type"])_all.jld2" mdp_game_data ŷ
 
 # INVERSE LEARNING
 b, C, terminate_step, converged, ψ_list = inverse_solve_mdp_game(mdp_game_data, ŷ; max_α=exp_params["max_alpha"], max_iter=exp_params["max_iter"], tol=exp_params["tol"], seed=exp_params["seed"])
 
 # VALIDATE
-y, = solve_ih_mdp_game(mdp_game_data, b, C) 
+# y, = solve_ih_mdp_game(mdp_game_data, b, C) 
 
 # create dirs
 !isdir("results") && mkdir("results")
@@ -55,7 +53,7 @@ exp_dir = "results/$(exp_params["env_name"])/$(exp_params["type"])"
 # plotting and save ψ vs iter
 plot(1:terminate_step, ψ_list, label="ψ(y,ŷ), converged=$converged")
 xlabel!("iter")
-title!(exp_label)
+title!("$(exp_params["env_name"]) | type=$(exp_params["type"]) \n seed=$(exp_params["seed"]) | max_α=$(exp_params["max_alpha"]) | tol=$(exp_params["tol"])")
 hline!([exp_params["tol"]], label="tol=$(exp_params["tol"])")
 savefig("$exp_dir/seed=$(exp_params["seed"]).png")    
 println("saved fig to `$exp_dir/seed=$(exp_params["seed"]).png`")

@@ -45,6 +45,42 @@ function plot_psi(exp_dir, se_list)
     savefig("$exp_dir/psi_plot/psi_plot_max-min")
 end
 
+function plot_gridworld_y(mdp_game_data, y, player; δ=2)
+    i = [state[1]*2 for state in vec(mdp_game_data.states)]
+    j = [state[2]*2 for state in vec(mdp_game_data.states)]
+    y_player_reshaped = reshape(y[:,player],(mdp_game_data.m, mdp_game_data.n))
+
+    quiver(i,j,
+            size=(1200,800),
+            aspect_ratio=:equal, 
+            xticks=-1:2:9, 
+            yticks=-1:2:9, 
+            gridlinewidth=3,
+            xlims=(-1,9), 
+            ylims=(-1,9),
+            arrow=arrow(:closed, 0.5),
+            quiver=(y_player_reshaped[4,:]*δ.+0.25,zeros(mdp_game_data.n))) # RIGHT
+    quiver!(i,j,quiver=(-y_player_reshaped[2,:]*δ.-0.25,zeros(mdp_game_data.n)),arrow=arrow(:closed, 0.5), legend=:outerright) # LEFT
+    quiver!(i,j,quiver=(zeros(mdp_game_data.n),y_player_reshaped[3,:]*δ.+0.25),arrow=arrow(:closed, 0.5)) # UP
+    quiver!(i,j, quiver=(zeros(mdp_game_data.n),-y_player_reshaped[1,:]*δ.-0.25),arrow=arrow(:closed, 0.5)) # DOWN
+    scatter!(i, j, markersize=y_player_reshaped[5,:]*50, legend=false) # STOP as Dots
+end
+
+function plot_gridworlds(exp_dir, seed)
+    @load "$exp_dir/seed=$(seed).jld2" mdp_game_data ŷ b C
+    y, v = solve_ih_mdp_game_optimized(mdp_game_data, b, C)
+
+    save_dir = "$exp_dir/heatmap_seed=$seed"
+    !isdir(save_dir) && mkdir(save_dir)
+
+    for i in ProgressBar(1:mdp_game_data.p)
+        plot_gridworld_y(mdp_game_data, ŷ, i)
+        savefig("$save_dir/player$(i)_ŷ")
+        plot_gridworld_y(mdp_game_data, y, i)
+        savefig("$save_dir/player$(i)_y")
+    end
+end
+
 function plot_heatmap(exp_dir, seed; grid_x=5, grid_y=5)
     @load "$exp_dir/seed=$(seed).jld2" mdp_game_data ŷ b C
     y, v = solve_ih_mdp_game_optimized(mdp_game_data, b, C)
@@ -86,6 +122,8 @@ function plot_heatmap_decoupled(exp_dir, seed; grid_x=5, grid_y=5)
     end
 end
 
+
+
 # function plot_heatmap_v(exp_dir, seed; x=5, y=5)
 #     @load "$exp_dir/seed=$(seed).jld2" v v̂
 
@@ -110,3 +148,25 @@ end
 # i,j = 1,2
 # heatmap(C[:,:,i,j], label="C[i,j]")
 # heatmap(Ĉ[:,:,i,j], label="Ĉ[i,j]")
+
+# function plot_gridworld_y_makie(mdp_game_data, y, player; δ=10)
+#     i = [state[1]*2 for state in vec(mdp_game_data.states)]
+#     j = [state[2]*2 for state in vec(mdp_game_data.states)]
+#     y_player_reshaped = reshape(y[:,player],(mdp_game_data.m, mdp_game_data.n))
+
+
+#     arrows!(i,j,y_player_reshaped[4,:]*δ.+0.25,zeros(mdp_game_data.n),
+#             size=(1200,800),
+#             aspect_ratio=:equal, 
+#             xticks=-1:2:9, 
+#             yticks=-1:2:9, 
+#             xlims=(-1,9), 
+#             ylims=(-1,9), 
+#             arrowsize=y_player_reshaped[4,:])
+#     quiver!(i,j,quiver=(-y_player_reshaped[2,:]*δ.-0.25,zeros(mdp_game_data.n)),arrow=arrow(:closed, 0.5)) # LEFT
+#     quiver!(i,j,quiver=(zeros(mdp_game_data.n),y_player_reshaped[3,:]*δ.+0.25),arrow=arrow(:closed, 0.5)) # UP
+#     quiver!(i,j,quiver=(zeros(mdp_game_data.n),-y_player_reshaped[1,:]*δ.-0.25),arrow=arrow(:closed, 0.5)) # DOWN
+
+#     scatter!(i, j, markersize=y_player_reshaped[5,:]*50) # STOP as Dots
+
+# end
