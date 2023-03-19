@@ -130,7 +130,7 @@ function compute_policy(mdp_game_data, y, player)
 
     return π
 end
-
+π
 function tikz_gridworld(mdp_game_data, y, player)
     π = compute_policy(mdp_game_data, y, player)
     π_stop = reshape(π[5,:], (5,5))
