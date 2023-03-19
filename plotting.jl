@@ -108,7 +108,6 @@ function plot_psi(exp_dir, se_list)
 end
 
 
-
 function get_C(mdp_game_data, i,j)
     m = mdp_game_data.m
     n = mdp_game_data.n
