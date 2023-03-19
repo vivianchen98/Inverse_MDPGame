@@ -18,11 +18,11 @@ function inverse_solve_mdp(mdp_game_data, ŷ; max_α=1, max_iter=100, tol=2e-3,
 
     # foward function for Zygote use
     function F1(y, v, b)
-        return hcat([-b[:, i] - log.(y[:,i]) - log.(D[i]'*D[i]*y[:,i]) + (D[i] - γ*E[i])' * v[:,i] for i in 1:p]...)
+        return hcat([b[:, i] - log.(y[:,i]) + log.(D[i]'*D[i]*y[:,i]) - (D[i] - γ*E[i])' * v[:,i] for i in 1:p]...)
     end
 
     function F2(y, v, b)
-        return hcat([D[i]*y[:,i]-q[i] - γ * E[i]*y[:,i] for i in 1:p]...)
+        return hcat([(D[i]-γ*E[i])*y[:,i] - q[i] for i in 1:p]...)
     end
 
     function ψ(y)
@@ -32,6 +32,7 @@ function inverse_solve_mdp(mdp_game_data, ŷ; max_α=1, max_iter=100, tol=2e-3,
     terminate_step = 0
     converged = false
     ψ_list = []
+    ψ_last = 9999
     for i in 1:max_iter
         println("\n iter = $i")
 
@@ -49,13 +50,10 @@ function inverse_solve_mdp(mdp_game_data, ŷ; max_α=1, max_iter=100, tol=2e-3,
         ∂F_ξ = [∂F1_y ∂F1_v; ∂F2_y ∂F2_v]; ∂F1_y = ∂F1_v = ∂F2_y = nothing; GC.gc()
         ∂ψ_y, = jacobian(y->ψ(y), y)
 
-        # ∂F_b = [∂F1_b; ∂F2_b]
-        # ∂ξ_b = -pinv(∂F_ξ) * [∂F1_b; ∂F2_b]
         ∂ξ_b = - ∂F_ξ \ [∂F1_b; ∂F2_b]; ∂F1_b = ∂F2_b = nothing; 
         ∂y_b = ∂ξ_b[1:length(y), :]; ∂ξ_b = nothing;
         ∇ψ_b = ∂y_b' * vec(∂ψ_y); ∂y_b = nothing;
         GC.gc()
-        # println("finished b grads")
 
         # GD with backtracking: Armijo condition (sufficient decrease)
         while(ψ(solve_ih_decoupled(mdp_game_data, b-α*reshape(∇ψ_b, m*n, p)).y) > ψ(y) - α/2 * norm(∇ψ_b)^2)
@@ -67,12 +65,14 @@ function inverse_solve_mdp(mdp_game_data, ŷ; max_α=1, max_iter=100, tol=2e-3,
         b = b - α * reshape(∇ψ_b, m*n, p)
 
         # stopping criteria
-        if ψ(y) < tol
+        if ψ_last - ψ(y) < tol
             println("Converged in $(i) steps, with ψ(y, ŷ) < $tol")
             terminate_step = i
             converged = true
             @info "metrics" ψ_value=ψ(y)
             break
+        else
+            ψ_last = ψ(y)
         end
 
         if i == max_iter

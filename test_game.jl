@@ -15,8 +15,8 @@ function parse_commandline()
             arg_type = String
             default = "vdn"
         "--max_alpha"
-            arg_type = Int64
-            default = 10
+            arg_type = Float64
+            default = 1.0
         "--max_iter"
             arg_type = Int64
             default = 200
@@ -26,6 +26,9 @@ function parse_commandline()
         "--seed"
             arg_type = Int64
             default = 1
+        "--rho"
+            arg_type = Float64
+            default = 100.0
     end
     return parse_args(s)
 end
@@ -36,7 +39,7 @@ exp_params = parse_commandline()
 @load "julia_data/$(exp_params["env_name"])/$(exp_params["type"])_all.jld2" mdp_game_data ŷ
 
 # INVERSE LEARNING
-b, C, terminate_step, converged, ψ_list = inverse_solve_mdp_game(mdp_game_data, ŷ; max_α=exp_params["max_alpha"], max_iter=exp_params["max_iter"], tol=exp_params["tol"], seed=exp_params["seed"])
+b, C, terminate_step, converged, ψ_list = inverse_solve_mdp_game(mdp_game_data, ŷ; max_α=exp_params["max_alpha"], max_iter=exp_params["max_iter"], tol=exp_params["tol"], seed=exp_params["seed"], rho=exp_params["rho"])
 
 # VALIDATE
 # y, = solve_ih_mdp_game(mdp_game_data, b, C) 

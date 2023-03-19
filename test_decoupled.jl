@@ -16,10 +16,10 @@ function parse_commandline()
             default = "vdn"
         "--max_alpha"
             arg_type = Int64
-            default = 10
+            default = 1
         "--max_iter"
             arg_type = Int64
-            default = 200
+            default = 100
         "--tol"
             arg_type = Float64
             default = 1e-2
