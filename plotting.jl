@@ -1,10 +1,12 @@
 using JLD2, Statistics, ProgressBars, StatsBase
-using Plots; default(fontfamily="Computer Modern", framestyle=:box) # LaTex-style
+using Measures, Plots; default(fontfamily="Computer Modern", framestyle=:box) # LaTex-style
 using ColorSchemes, Colors
 cmap = ColorScheme([Colors.RGB(180/255, 0.0, 0.0), Colors.RGB(1, 1, 1), Colors.RGB(0.0, 100/255, 0.0)], "custom", "threetone, red, white, and green")
 cmap_whitegreen = ColorScheme([Colors.RGB(1, 1, 1), Colors.RGB(0.0, 100/255, 0.0)], "custom", "twotone, white, and green")
-cmap_whiteblue = ColorScheme([Colors.RGB(1, 1, 1), Colors.RGB(0.0,0.0,180/255)], "custom", "twotone, white, and blue")
-cmap_whitered = ColorScheme([Colors.RGB(1, 1, 1), Colors.RGB(180/255, 0.0, 0.0)], "custom", "twotone, white, and blue")
+cmap_whiteblue = ColorScheme([Colors.RGB(1, 1, 1), Colors.RGB(0.12156862745098039, 0.4666666666666667, 0.7058823529411765)], "custom", "twotone, white, and blue")
+cmap_whitered = ColorScheme([Colors.RGB(1, 1, 1), Colors.RGB(0.8392156862745098, 0.15294117647058825, 0.1568627450980392)], "custom", "twotone, white, and blue")
+using LaTeXStrings, Printf
+gr()
 
 include("solvers/mdp_game_solver_inf.jl")
 include("solvers/mdp_solver_inf.jl")
@@ -240,16 +242,26 @@ function plot_kl_gridworld(π_klmap, clims_max, cmap_style)
             color=cmap_style.colors, 
             clims=(0,clims_max),
             aspect_ratio=:equal, 
-            xlims=(0.5,5.5), 
-            # size=(400,400)
+            xlims=(0.5,5.5),
+            axis=nothing, 
+            # colorbar=true,
+            # colorbar_orientation="horizontal",
+            # legend = (position = :bottom)            
+            # legend = :none,
+            # colorbar_title = L"D_{KL}(\Pi^1_s \| \hat{\Pi^1}_s)"
+            size=(400,400),
+            dpi=300
             )
-    
+
     for x in 1:5
         for y in 1:5
             if π_klmap[y,x] > clims_max/2
-                annotate!([(x, y, (round(π_klmap[y,x];digits=2), :white, :center, 12, "Computer Modern"))])
+                # annotate!([(x, y, (round(π_klmap[y,x];digits=2), :white, :center, 12, "Computer Modern"))])
+                annotate!([(x, y, (@sprintf("%.2f",π_klmap[y,x]), :white, :center, 12, "Computer Modern"))])
+                
             else
-                annotate!([(x, y, (round(π_klmap[y,x];digits=2), :black, :center, 12, "Computer Modern"))])
+                # annotate!([(x, y, (round(π_klmap[y,x];digits=2), :black, :center, 12, "Computer Modern"))])
+                annotate!([(x, y, (@sprintf("%.2f",π_klmap[y,x]), :black, :center, 12, "Computer Modern"))])
             end
         end
     end
@@ -257,10 +269,10 @@ end
 
 function plot_kl(π_avgklmap_game, π_avgklmap_decoupled, player; clims_max=5, cmap_style=cmap)
     plot_kl_gridworld(π_avgklmap_game, clims_max, cmap_style)
-    savefig("kl_game$player")
+    savefig("kl_game$(player)")
 
     plot_kl_gridworld(π_avgklmap_decoupled, clims_max, cmap_style)
-    savefig("kl_decoupled$player")
+    savefig("kl_decoupled$(player)")
 end
 
 function plot_v(v, player, clims)
