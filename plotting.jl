@@ -29,12 +29,6 @@ function get_ψ_stats(exp_dir, se_list)
     end
 
     # compute plot data
-    # terminate_step_min = minimum(terminate_steps)
-    # ψ_avg = [mean([ψ_list_group[se][t] for se in se_list]) for t in 1:terminate_step_min]
-    # ψ_std = [std([ψ_list_group[se][t] for se in se_list]) for t in 1:terminate_step_min]
-    # ψ_max = [maximum([ψ_list_group[se][t] for se in se_list]) for t in 1:terminate_step_min]
-    # ψ_min = [minimum([ψ_list_group[se][t] for se in se_list]) for t in 1:terminate_step_min]
-
     ψ_avg = Vector{Float64}()
     ψ_std = Vector{Float64}()
     ψ_max = Vector{Float64}()
@@ -76,21 +70,6 @@ function plot_psi_all_lines(result, result_decoupled, stop_step)
     title!("All Lines")
 end
 
-# function plot_psi_all_lines_logscale(result, result_decoupled, stop_step)
-#     plot(1:result.terminate_steps[1], result.ψ_list_group[1], xlims=(1,stop_step))
-#     for se in se_list[2:end]
-#         plot!(1:result.terminate_steps[se], result.ψ_list_group[se], xlims=(1,stop_step))
-#     end
-
-#     plot!(1:result_decoupled.terminate_steps[1], result_decoupled.ψ_list_group[1], xlims=(1,stop_step))
-#     for se in se_list[2:end]
-#         plot!(1:result_decoupled.terminate_steps[se], result_decoupled.ψ_list_group[se], xlims=(1,stop_step))
-#     end
-#     xlabel!("Iter")
-#     ylabel!("ψ(y,ŷ)")
-#     title!("All Lines")
-# end
-
 function plot_psi_std(result, result_decoupled, stop_step)
     plot(1:stop_step, result.ψ_avg[1:stop_step], linewidth=1, ribbon=result.ψ_std[1:stop_step], fillalpha=.3, label="Ours", xlims=(1,stop_step))
     plot!(1:stop_step, result_decoupled.ψ_avg[1:stop_step], linewidth=1, ribbon=result_decoupled.ψ_std[1:stop_step], fillalpha=.3, label="MA-IRL", xlims=(1,stop_step))
@@ -129,12 +108,6 @@ function plot_psi(exp_dir, se_list)
     savefig("$exp_dir/psi_plot/psi_plot_max-min")
 end
 
-# function get_C(mdp_game_data, i,j)
-#     m = mdp_game_data.m
-#     n = mdp_game_data.n
-#     return C[(i-1)*m*n+1:i*m*n, (j-1)*m*n+1:j*m*n]
-# end
-
 function compute_policy(mdp_game_data, y, player)
     y_player_reshaped = reshape(y[:,player],(mdp_game_data.m, mdp_game_data.n))
 
@@ -151,65 +124,6 @@ function compute_policy(mdp_game_data, y, player)
 
     return π
 end
-
-# function tikz_gridworld(mdp_game_data, y, player)
-#     π = compute_policy(mdp_game_data, y, player)
-#     π_stop = reshape(π[5,:], (5,5))
-#     π_right = reshape(π[4,:], (5,5))
-#     π_left = reshape(π[2,:], (5,5))
-#     π_up = reshape(π[3,:], (5,5))
-#     π_down = reshape(π[1,:], (5,5))
-
-#     open("π̂_$(player)_gridworld.tex", "w") do file
-#         write(file, "\\begin{tikzpicture}\n")
-#         write(file, "\t\\draw (0, 0) grid (5, 5);\n")
-
-#         for i in 1:5
-#             for j in 1:5
-#                 x = i - 0.5
-#                 y = j - 0.5
-#                 if π_stop[i,j] > 0
-#                     write(file, "\t\\fill[olive, fill opacity=.6] ($x, $y) circle[radius=$(π_stop[i,j]*0.5)];\n")
-#                 end
-#                 if π_right[i,j] > 0
-#                     write(file, "\t\\draw[-stealth, blue] ($x, $y) -- ($x+$(π_right[i,j]*0.5), $y);\n")
-#                 end
-#                 if π_left[i,j] > 0
-#                     write(file, "\t\\draw[-stealth, orange] ($x, $y) -- ($x-$(π_left[i,j]*0.5), $y);\n")
-#                 end
-#                 if π_up[i,j] > 0
-#                     write(file, "\t\\draw[-stealth, teal] ($x, $y) -- ($x, $y+$(π_up[i,j]*0.5));\n")
-#                 end
-#                 if π_down[i,j] > 0
-#                     write(file, "\t\\draw[-stealth, purple] ($x, $y) -- ($x, $y-$(π_down[i,j]*0.5));\n")
-#                 end
-#             end
-#         end
-#         write(file, "\\end{tikzpicture}\n")
-#     end
-# end
-
-# function plot_gridworld(mdp_game_data, y, player; δ=1)
-#     π = compute_policy(mdp_game_data, y, player)
-
-#     i = [state[1]*2 for state in vec(mdp_game_data.states)]
-#     j = [state[2]*2 for state in vec(mdp_game_data.states)]
-
-#     quiver(i,j,
-#             size=(1000,1000),
-#             aspect_ratio=:equal, 
-#             xticks=-1:2:9, 
-#             yticks=-1:2:9, 
-#             gridlinewidth=3,
-#             xlims=(-1,9), 
-#             ylims=(-1,9),
-#             arrow=arrow(:closed, 0.5),
-#             quiver=(π[4,:]*δ,zeros(mdp_game_data.n))) # RIGHT
-#     quiver!(i,j,quiver=(-π[2,:]*δ,zeros(mdp_game_data.n)),arrow=arrow(:closed, 0.5), legend=:outerright) # LEFT
-#     quiver!(i,j,quiver=(zeros(mdp_game_data.n),π[3,:]*δ),arrow=arrow(:closed, 0.5)) # UP
-#     quiver!(i,j, quiver=(zeros(mdp_game_data.n),-π[1,:]*δ),arrow=arrow(:closed, 0.5)) # DOWN
-#     scatter!(i, j, markersize=π[5,:]*100, alpha=.5, legend=false) # STOP as Dots
-# end
 
 function compute_avg_kl_map(mdp_game_data, ŷ, player)
     π_obs = compute_policy(mdp_game_data, ŷ, player)
@@ -274,42 +188,3 @@ function plot_kl(π_avgklmap_game, π_avgklmap_decoupled, player; clims_max=5, c
     plot_kl_gridworld(π_avgklmap_decoupled, clims_max, cmap_style)
     savefig("kl_decoupled$(player)")
 end
-
-function plot_v(v, player, clims)
-    v_normalized = v[:,player]./norm(v[:,player])
-    @show maximum(v_normalized)
-    @show minimum(v_normalized)
-    heatmap(reshape(v_normalized,(5,5)), color=cmap.colors, aspect_ratio=:equal, xlims=(0.5,5.5), clims=clims)
-    savefig("v$(player)")
-end
-
-
-# function plot_heatmaps(exp_dir, seed; grid_x=5, grid_y=5)
-#     @load "$exp_dir/seed=$(seed).jld2" mdp_game_data b C
-
-#     save_dir = "$exp_dir/heatmaps_seed=$seed"
-#     !isdir(save_dir) && mkdir(save_dir)
-
-#     # plotting heatmap of b
-#     for i in ProgressBar(1:mdp_game_data.p)
-#         heatmap(reshape(b[:,i],(mdp_game_data.m, mdp_game_data.n)), clim=(-2,2), xticks = 1:mdp_game_data.n, yticks = (1:mdp_game_data.m, ["DOWN", "LEFT", "UP", "RIGHT", "STOP"]), title="b", color=cmap.colors)
-#         savefig("$save_dir/player$(i)_b")
-#     end
-
-#     # plotting heatmap of C
-#     heatmap(C, clim=(-1,1), color=cmap.colors)
-#     savefig("$save_dir/C")
-# end
-
-# function plot_heatmaps_decoupled(exp_dir, seed; grid_x=5, grid_y=5)
-#     @load "$exp_dir/seed=$(seed).jld2" mdp_game_data b
-
-#     save_dir = "$exp_dir/heatmaps_seed=$seed"
-#     !isdir(save_dir) && mkdir(save_dir)
-
-#     # plotting heatmap of b
-#     for i in ProgressBar(1:mdp_game_data.p)
-#         heatmap(reshape(b[:,i],(mdp_game_data.m, mdp_game_data.n)), clim=(-2,2), xticks = 1:mdp_game_data.n, yticks = (1:mdp_game_data.m, ["DOWN", "LEFT", "UP", "RIGHT", "STOP"]), title="b", color=cmap.colors)
-#         savefig("$save_dir/player$(i)_b")
-#     end
-# end
